@@ -1,4 +1,4 @@
 from apps.auto_chrome import AutoChrome
 
 client = AutoChrome('dev')
-client.verifyCodeTest()
+client.formTest()

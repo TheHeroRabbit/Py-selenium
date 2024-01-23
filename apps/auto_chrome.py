@@ -52,7 +52,7 @@ class AutoChrome:
 
     def WaitElementAppear(self, x_path):
         """
-        等待元素出现
+        等待元素可见
         """
         locator = (By.XPATH, x_path)
         WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator))
@@ -61,8 +61,17 @@ class AutoChrome:
         """
         等待元素消失
         """
-        locator = (By.XPATH, x_path)
-        WebDriverWait(self.driver, 20).until_not(ec.invisibility_of_element_located(locator))
+        try:
+            self.driver.implicitly_wait(0)
+            element = self.driver.find_element(By.XPATH, x_path)
+            for _ in range(20):
+                sleep(1)
+                if not element.is_enabled():
+                    break
+        except:
+            pass
+        finally:
+            self.driver.implicitly_wait(30)
 
     def ClickElement(self, x_path, n=1):
         """
@@ -138,7 +147,7 @@ class AutoChrome:
             self.SetElementValue('//*[@id="ctl00_mainContent_tbSelfAssement"]', '***' * 10)
             self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_cbAcceptTerms"]').click()
             self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_btnSubmit"]').click()
-            sleep(0.5)
+            self.WaitElementDisappear('//*[@id="ctl00_mainContent_btnSubmit"]')
             self.driver.back()
 
         sleep(0.5)
