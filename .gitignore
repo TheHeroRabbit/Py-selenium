@@ -4,3 +4,4 @@ XiaoMaRPA/
 */__pycache__/
 chromedriver.exe
 *.spec
+*.txt

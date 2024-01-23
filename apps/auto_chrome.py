@@ -1,6 +1,7 @@
 import uuid
 import requests
 from time import sleep
+from . import write_log
 from pathlib import Path
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
@@ -124,6 +125,7 @@ class AutoChrome:
         sleep(2)
         self.driver.quit()
 
+    @write_log('log.txt')
     def formTest(self):
         """
         表单测试
@@ -149,6 +151,8 @@ class AutoChrome:
             self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_btnSubmit"]').click()
             self.WaitElementDisappear('//*[@id="ctl00_mainContent_btnSubmit"]')
             self.driver.back()
+
+            yield '录入成功'
 
         sleep(0.5)
         self.driver.quit()
