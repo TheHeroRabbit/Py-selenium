@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 
-USER_DATA_DIR = Path(__file__).resolve().parent.joinpath("XiaoMaRPA")
+USER_DATA_DIR = Path.cwd().joinpath("XiaoMaRPA")
 
 
 class AutoChrome:

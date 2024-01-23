@@ -1,3 +1,6 @@
-work/XiaoMaRPA/
-work/__pycache__/
+build/
+dist/
+XiaoMaRPA/
+*/__pycache__/
 chromedriver.exe
+*.spec
