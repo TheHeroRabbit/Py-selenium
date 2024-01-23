@@ -1,4 +1,5 @@
 import uuid
+import requests
 from time import sleep
 from pathlib import Path
 from selenium.webdriver import Chrome
@@ -91,6 +92,18 @@ class AutoChrome:
         self.driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", element)
         self.driver.execute_script("arguments[0].blur();", element)
 
+    def RecognizeCodeImg(self, x_path):
+        """
+        识别验证码
+        """
+        self.WaitElementAppear(x_path)
+        element = self.driver.find_element(By.XPATH, x_path)
+        imgfile = element.screenshot_as_base64
+        ocr_api = "https://api.rpacoder-my.cn/ocr/b64"
+        response = requests.post(ocr_api, data=imgfile)
+
+        return response.text
+
     def baiduTest(self):
         """
         百度测试
@@ -122,13 +135,36 @@ class AutoChrome:
             for i in '音乐,运动,电影,购物'.split(','):
                 self.driver.find_element(By.XPATH, '//label[text()="{}"]'.format(i)).click()
 
-            self.SetElementValue('//*[@id="ctl00_mainContent_tbSelfAssement"]', '***' * 100)
+            self.SetElementValue('//*[@id="ctl00_mainContent_tbSelfAssement"]', '***' * 10)
             self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_cbAcceptTerms"]').click()
             self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_btnSubmit"]').click()
             sleep(0.5)
             self.driver.back()
 
         sleep(0.5)
+        self.driver.quit()
+
+    def verifyCodeTest(self):
+        """
+        验证码测试
+        """
+        self.driver.get("https://captcha8.scrape.center/")
+
+        for _ in range(10):
+
+            self.InputElement('//form/div[1]//input', 'admin')
+            self.InputElement('//form/div[2]//input', 'admin')
+            self.InputElement('//form/div[3]//input', self.RecognizeCodeImg('//*[@id="captcha"]'))
+            self.ClickElement('//span[text()="登录"]')
+
+            try:
+                self.driver.implicitly_wait(1)
+                self.driver.find_element(By.ID, 'captcha').click()
+            except:
+                break
+            finally:
+                self.driver.implicitly_wait(30)
+
         self.driver.quit()
 
 
