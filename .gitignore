@@ -1,7 +1,7 @@
 build/
 dist/
+logs/
+*.spec
 XiaoMaRPA/
 */__pycache__/
 chromedriver.exe
-*.spec
-*.txt

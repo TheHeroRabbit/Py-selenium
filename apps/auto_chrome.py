@@ -114,6 +114,7 @@ class AutoChrome:
 
         return response.text
 
+    @write_log('baiduTest.txt')
     def baiduTest(self):
         """
         百度测试
@@ -122,10 +123,12 @@ class AutoChrome:
         self.InputElement('//*[@id="kw"]', 'python')
         self.ClickElement('//*[@id="su"]')
 
-        sleep(2)
+        yield {'status': 'ok', 'message': '百度测试结束'}
+
+        sleep(1)
         self.driver.quit()
 
-    @write_log('log.txt')
+    @write_log('formTest.txt')
     def formTest(self):
         """
         表单测试
@@ -152,11 +155,12 @@ class AutoChrome:
             self.WaitElementDisappear('//*[@id="ctl00_mainContent_btnSubmit"]')
             self.driver.back()
 
-            yield '录入成功'
+            yield {'status': 'ok', 'message': '模拟表单提交成功'}
 
         sleep(0.5)
         self.driver.quit()
 
+    @write_log('verifyCodeTest.txt')
     def verifyCodeTest(self):
         """
         验证码测试
@@ -173,7 +177,9 @@ class AutoChrome:
             try:
                 self.driver.implicitly_wait(1)
                 self.driver.find_element(By.ID, 'captcha').click()
+                yield {'status': 'ok', 'message': '验证失败，尝试刷新...'}
             except:
+                yield {'status': 'ok', 'message': '登录成功...'}
                 break
             finally:
                 self.driver.implicitly_wait(30)
