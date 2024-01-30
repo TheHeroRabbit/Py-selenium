@@ -18,23 +18,29 @@ USER_DATA_DIR = Path.cwd().joinpath("XiaoMaRPA")
 
 class AutoChrome:
 
-    def __init__(self, mode):
+    def __init__(self, mode, userdataDir=None):
         """
         构造函数
         """
-        options = self.NewChromeOptions(mode)
+        options = self.NewChromeOptions(mode, userdataDir)
         service = Service(executable_path="chromedriver.exe")
 
         self.driver = Chrome(options=options,
                              service=service,)
-        self.driver.maximize_window()
+
+        # self.driver.maximize_window()
         self.driver.implicitly_wait(30)
+        self.driver.set_window_size(1366, 768)
         self.actions = ActionChains(self.driver)
 
-    def NewChromeOptions(self, mode) -> Options:
+    @staticmethod
+    def NewChromeOptions(mode, folder) -> Options:
         """
         初始设置
         """
+        folder = folder if folder else str(uuid.uuid4())
+        __user_data_dir = USER_DATA_DIR.joinpath(folder)
+
         options = Options()
         prefs = {
             "credentials_enable_service": False,
@@ -45,8 +51,8 @@ class AutoChrome:
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_argument("--disable-blink-features")
         options.add_argument("--profile-directory=Default")
+        options.add_argument("--user-data-dir={}".format(__user_data_dir))
         options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument(f"--user-data-dir={USER_DATA_DIR.joinpath(str(uuid.uuid4()))}")
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
         return options

@@ -1,10 +1,15 @@
+from threading import Thread
 from apps.auto_chrome import AutoChrome
 
-client_0 = AutoChrome('dev')
-client_0.formTest()
 
-client_1 = AutoChrome('dev')
-client_1.baiduTest()
+t1 = Thread(target=AutoChrome('dev', '').formTest, daemon=True)
+t2 = Thread(target=AutoChrome('dev', 'baidu').baiduTest, daemon=True)
+t3 = Thread(target=AutoChrome('dev', 'verifyCode').verifyCodeTest, daemon=True)
 
-client_2 = AutoChrome('dev')
-client_2.verifyCodeTest()
+tasks = [t1, t2, t3]
+
+for t in tasks:
+    t.start()
+
+for t in tasks:
+    t.join()
