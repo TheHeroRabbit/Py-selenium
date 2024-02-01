@@ -1,7 +1,9 @@
 build/
 dist/
 logs/
+*.db
 *.spec
 XiaoMaRPA/
+/__pycache__/
 */__pycache__/
 chromedriver.exe

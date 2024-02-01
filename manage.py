@@ -1,8 +1,7 @@
 from threading import Thread
 from apps.auto_chrome import AutoChrome
 
-
-t1 = Thread(target=AutoChrome('dev', '').formTest, daemon=True)
+t1 = Thread(target=AutoChrome('dev', 'form').formTest, daemon=True)
 t2 = Thread(target=AutoChrome('dev', 'baidu').baiduTest, daemon=True)
 t3 = Thread(target=AutoChrome('dev', 'verifyCode').verifyCodeTest, daemon=True)
 

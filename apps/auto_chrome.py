@@ -1,7 +1,8 @@
 import uuid
+import random
 import requests
 from time import sleep
-from . import write_log
+from . import save_data
 from pathlib import Path
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
@@ -10,6 +11,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -57,12 +59,14 @@ class AutoChrome:
 
         return options
 
-    def WaitElementAppear(self, x_path):
+    def WaitElementAppear(self, x_path) -> WebElement:
         """
         等待元素可见
         """
         locator = (By.XPATH, x_path)
-        WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator))
+        element = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator))
+
+        return element
 
     def WaitElementDisappear(self, x_path):
         """
@@ -84,16 +88,14 @@ class AutoChrome:
         """
         元素点击
         """
-        self.WaitElementAppear(x_path)
-        element = self.driver.find_element(By.XPATH, x_path)
+        element = self.WaitElementAppear(x_path)
         self.actions.move_to_element(element).click(on_element=element).pause(n).perform()
 
     def InputElement(self, x_path, value):
         """
         元素输入
         """
-        self.WaitElementAppear(x_path)
-        element = self.driver.find_element(By.XPATH, x_path)
+        element = self.WaitElementAppear(x_path)
         element.clear()
         element.send_keys(value, Keys.ENTER)
 
@@ -101,8 +103,7 @@ class AutoChrome:
         """
         设置元素文本
         """
-        self.WaitElementAppear(x_path)
-        element = self.driver.find_element(By.XPATH, x_path)
+        element = self.WaitElementAppear(x_path)
         self.driver.execute_script("arguments[0].focus();", element)
         self.driver.execute_script("arguments[0].value = arguments[1];", element, value)
         self.driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", element)
@@ -112,15 +113,14 @@ class AutoChrome:
         """
         识别验证码
         """
-        self.WaitElementAppear(x_path)
-        element = self.driver.find_element(By.XPATH, x_path)
+        element = self.WaitElementAppear(x_path)
         imgfile = element.screenshot_as_base64
         ocr_api = "https://api.rpacoder-my.cn/ocr/b64"
         response = requests.post(ocr_api, data=imgfile)
 
         return response.text
 
-    @write_log('baiduTest.txt')
+    @save_data('baiduTest')
     def baiduTest(self):
         """
         百度测试
@@ -129,12 +129,16 @@ class AutoChrome:
         self.InputElement('//*[@id="kw"]', 'python')
         self.ClickElement('//*[@id="su"]')
 
-        yield {'status': 'ok', 'message': '百度测试结束'}
+        for n in range(6):
+            self.ClickElement('//a[contains(text(),"下一页")]', n=2.5)
+            yield {'status': 'next page', 'message': f'第{n+1}页...'}
+
+        yield {'status': 'over', 'message': '百度翻页测试结束'}
 
         sleep(1)
         self.driver.quit()
 
-    @write_log('formTest.txt')
+    @save_data('formTest')
     def formTest(self):
         """
         表单测试
@@ -143,16 +147,18 @@ class AutoChrome:
 
         for _ in range(20):
 
-            self.SetElementValue('//*[@id="ctl00_mainContent_tbUsername"]', '用户名')
-            self.SetElementValue('//*[@id="ctl00_mainContent_tbPassword"]', '123456')
+            self.SetElementValue('//*[@id="ctl00_mainContent_tbUsername"]', random.choice(['李雷', '韩梅梅']))
+            self.SetElementValue('//*[@id="ctl00_mainContent_tbPassword"]', str(random.randint(10000, 99999)))
             self.SetElementValue('//*[@id="ctl00_mainContent_tbEMail"]', '302752966@qq.com')
 
-            self.driver.find_element(By.XPATH, '//input[@type="radio" and @value="{}"]'.format('男')).click()
+            self.driver.find_element(By.XPATH, '//input[@type="radio" and @value="{}"]'.format(random.choice(['男', '女']))).click()
             Select(self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_ddlProvince"]')).select_by_visible_text('湖北')
-            Select(self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_ddlCity"]')).select_by_visible_text('荆州')
+            Select(self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_ddlCity"]')).select_by_visible_text('武汉')
+            Select(self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_lbObjectives"]')).deselect_all()
             Select(self.driver.find_element(By.XPATH, '//*[@id="ctl00_mainContent_lbObjectives"]')).select_by_visible_text('通信技术')
 
-            for i in '音乐,运动,电影,购物'.split(','):
+            hobbies = random.sample(['音乐', '运动', '电影', '购物'], 3)
+            for i in hobbies:
                 self.driver.find_element(By.XPATH, '//label[text()="{}"]'.format(i)).click()
 
             self.SetElementValue('//*[@id="ctl00_mainContent_tbSelfAssement"]', '***' * 10)
@@ -163,10 +169,10 @@ class AutoChrome:
 
             yield {'status': 'ok', 'message': '模拟表单提交成功'}
 
-        sleep(0.5)
+        sleep(1)
         self.driver.quit()
 
-    @write_log('verifyCodeTest.txt')
+    @save_data('verifyCodeTest')
     def verifyCodeTest(self):
         """
         验证码测试
@@ -185,21 +191,9 @@ class AutoChrome:
                 self.driver.find_element(By.ID, 'captcha').click()
                 yield {'status': 'ok', 'message': '验证失败，尝试刷新...'}
             except:
-                yield {'status': 'ok', 'message': '登录成功...'}
+                yield {'status': 'over', 'message': '登录成功...'}
                 break
             finally:
                 self.driver.implicitly_wait(30)
 
         self.driver.quit()
-
-
-class AutoWork(AutoChrome):
-
-    def __init__(self, mode):
-        super().__init__(mode)
-
-    def process_task(self):
-        """
-        处理工作
-        """
-        pass
