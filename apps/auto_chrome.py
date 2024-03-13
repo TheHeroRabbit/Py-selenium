@@ -1,3 +1,4 @@
+import os
 import uuid
 import random
 import requests
@@ -32,7 +33,7 @@ class AutoChrome:
 
         # self.driver.maximize_window()
         self.driver.implicitly_wait(30)
-        self.driver.set_window_size(1366, 768)
+        # self.driver.set_window_size(1366, 768)
         self.actions = ActionChains(self.driver)
 
     @staticmethod
@@ -44,6 +45,20 @@ class AutoChrome:
         __user_data_dir = USER_DATA_DIR.joinpath(folder)
 
         options = Options()
+
+        if 'dev' in mode:
+            if 'start' in mode:
+                os.popen("taskkill /f /im chromedriver.exe")
+                os.popen("taskkill /f /im chrome.exe")
+                sleep(1)
+                os.popen(f'start chrome.exe --remote-debugging-port=54321 --user-data-dir="{__user_data_dir}"')
+
+            options.add_experimental_option(
+                "debuggerAddress",
+                "127.0.0.1:54321",
+            )
+            return options
+
         prefs = {
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
