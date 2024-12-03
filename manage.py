@@ -1,5 +1,5 @@
 from threading import Thread
-from apps.auto_chrome import AutoChrome
+from src.auto_chrome import AutoChrome
 
 t1 = Thread(target=AutoChrome('pro', 'form').formTest, daemon=True)
 t2 = Thread(target=AutoChrome('pro', 'baidu').baiduTest, daemon=True)
