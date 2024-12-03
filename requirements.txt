@@ -1,2 +1,5 @@
+ddddocr
+pymysql
 selenium
-requests
+Pillow==9.4.0
+onnxruntime==1.14.1

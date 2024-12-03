@@ -1,10 +1,11 @@
 import os
 import uuid
 import random
-import requests
+
 from time import sleep
 from . import save_data
 from pathlib import Path
+from ddddocr import DdddOcr
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -16,7 +17,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 
-USER_DATA_DIR = Path.cwd().joinpath("XiaoMaRPA")
+USER_DATA_DIR = Path.cwd().joinpath(".cache")
 
 
 class AutoChrome:
@@ -51,11 +52,11 @@ class AutoChrome:
                 os.popen("taskkill /f /im chromedriver.exe")
                 os.popen("taskkill /f /im chrome.exe")
                 sleep(1)
-                os.popen(f'start chrome.exe --remote-debugging-port=54321 --user-data-dir="{__user_data_dir}"')
+                os.popen(f'start chrome.exe --remote-debugging-port=62222 --user-data-dir="{__user_data_dir}"')
 
             options.add_experimental_option(
                 "debuggerAddress",
-                "127.0.0.1:54321",
+                "127.0.0.1:62222",
             )
             return options
 
@@ -130,10 +131,11 @@ class AutoChrome:
         """
         element = self.WaitElementAppear(x_path)
         imgfile = element.screenshot_as_base64
-        ocr_api = "https://api.rpacoder-my.cn/ocr/b64"
-        response = requests.post(ocr_api, data=imgfile)
 
-        return response.text
+        ocr = DdddOcr(show_ad=False)
+        result = ocr.classification(imgfile)
+
+        return result
 
     @save_data('baiduTest')
     def baiduTest(self):
